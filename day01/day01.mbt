@@ -24,12 +24,56 @@ async fn read_input() -> String {
 }
 
 ///|
+priv struct Dial {
+  mut at : Int32
+}
+
+///|
+fn Dial::new(at : Int32) -> Dial {
+  Dial::{ at, }
+}
+
+///|
+fn Dial::rotate(self : Dial, rotate : Rotate) -> Int32 {
+  let mut triggered = 0
+  match rotate {
+    L(n) =>
+      for _ in 0..<n {
+        self.at -= 1
+        if self.at == 0 {
+          triggered += 1
+        }
+        if self.at == -1 {
+          self.at = 99
+        }
+      }
+    R(n) =>
+      for _ in 0..<n {
+        self.at += 1
+        if self.at == 0 {
+          triggered += 1
+        }
+        if self.at == 100 {
+          self.at = 1
+        }
+      }
+  }
+
+  triggered
+}
+
+///|
 pub async fn run() -> Unit {
   let content = read_input()
   let lines = content.split("\n")
+  let dial = Dial::new(50)
+  let mut triggered = 0
   for each_line in lines {
-    abort("HOW to do binary patter matching")
+    let rotate = parse_to_rotate(each_line.to_owned())
+    triggered += dial.rotate(rotate)
   }
+
+  println("passwd is: \{triggered}")
 }
 
 ///|
@@ -47,7 +91,7 @@ impl Show for Rotate with fn output(self, logger) -> Unit {
 }
 
 ///|
-fn parse_chars(line : String) -> Rotate raise Day01Error {
+fn parse_to_rotate(line : String) -> Rotate raise Day01Error {
   match line.to_array() {
     ['L', .. rest] => L(parse_num(rest))
     ['R', .. rest] => R(parse_num(rest))
@@ -88,6 +132,6 @@ fn parse_to_n(c : Char) -> Int32 raise Day01Error {
 
 ///|
 test "protocol" {
-  println("\{parse_chars("L98")}")
-  assert_eq(L(98), parse_chars("L98"))
+  println("\{parse_to_rotate("L98")}")
+  assert_eq(L(98), parse_to_rotate("L98"))
 }
