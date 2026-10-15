@@ -11,6 +11,17 @@ pub(all) suberror DownloadError {
 }
 
 ///|
+impl Show for DownloadError with fn output(self, logger) -> Unit {
+  match self {
+    BadStatus(status_value, s) =>
+      logger.write_string("status_value: \{status_value}, \{s}")
+    TooManyRedirects(s) => logger.write_string(s)
+    DownloadFailed(s) => logger.write_string(s)
+    BadRedirect(s) => logger.write_string(s)
+  }
+}
+
+///|
 pub const PROJECT_ROOT = "/home/zw/code/moonbit_programming/aoc2025"
 
 ///|
@@ -46,6 +57,29 @@ fn proxy_url_from_env() -> String? {
 }
 
 ///|
+/// Read the Advent of Code session token from the environment.
+fn aoc_session_from_env() -> String? {
+  for name in ["AOC_SESSION", "aoc_session"] {
+    if @env.get_env_var(name) is Some(v) && !v.is_empty() {
+      return Some(v)
+    }
+  }
+  None
+}
+
+///|
+/// Build request headers, adding the AoC session cookie when available.
+fn download_headers() -> @http.Headers {
+  let headers = Map([])
+  match aoc_session_from_env() {
+    Some(session) =>
+      headers.set(@http.CaseInsensitiveString("cookie"), "session=" + session)
+    None => ()
+  }
+  headers
+}
+
+///|
 /// Resolve a redirect `Location` against the URL that produced it.
 fn resolve_redirect(current : String, location : String) -> String raise {
   if location.has_prefix("http") {
@@ -67,10 +101,14 @@ fn resolve_redirect(current : String, location : String) -> String raise {
 
 ///|
 async fn open_stream(url : String) -> (@http.Response, @http.Client) {
-  println("open_stream: \{url}")
+  let headers = download_headers()
+  let proxy = match proxy_url_from_env() {
+    Some(url) => Some(@http.Client::Client(url))
+    None => None
+  }
   let mut url = url
   for _ in 0..<5 {
-    let (resp, body) = @http.get_stream(url)
+    let (resp, body) = @http.get_stream(url, headers~, proxy?)
 
     match resp.code {
       301 | 302 | 303 | 307 | 308 as x =>
@@ -85,6 +123,11 @@ async fn open_stream(url : String) -> (@http.Response, @http.Client) {
       x if x < 200 || x >= 300 => {
         body.close()
         println("return code is: \{x}")
+        if x == 400 && aoc_session_from_env() is None {
+          println(
+            "Hint: set the AOC_SESSION environment variable with your Advent of Code session cookie.",
+          )
+        }
         raise DownloadError::BadStatus(x, url)
       }
       _ => return (resp, body)
@@ -104,20 +147,16 @@ async fn try_download(url : String, dest : String) -> Unit {
   println("try_download: \{url} into file: \{dest}")
 
   let (resp, body) = open_stream(url)
-  let remote_size = resp.headers
-    .get(@http.CaseInsensitiveString("content-length"))
-    .unwrap_or_error(
-      DownloadError::DownloadFailed("unable to get remote file size"),
-    )
-    |> @string.parse_int64
-
-  guard @fs.exists(dest) else {
-    raise DownloadError::DownloadFailed(
-      "specified download dest: \{dest} doesn't exist",
-    )
+  let remote_size = match
+    resp.headers.get(@http.CaseInsensitiveString("content-length")) {
+    Some(len) =>
+      @string.parse_int64(len) catch {
+        _ =>
+          raise DownloadError::DownloadFailed("invalid content-length: \{len}")
+      }
+    None => -1L
   }
 
-  let mut current_size = @fs.file_size(dest)
   let dest_file = @fs.open(
     dest,
     mode=@fs.WriteOnly,
@@ -125,13 +164,16 @@ async fn try_download(url : String, dest : String) -> Unit {
   )
   defer dest_file.close()
 
-  while current_size != remote_size {
+  let mut current_size = 0L
+  while remote_size < 0 || current_size != remote_size {
     match body.read_some(max_len=65536) {
       Some(chunk) => {
         dest_file.write(chunk)
         current_size += chunk.length().to_int64()
-        let progress = current_size * 100 / remote_size
-        @stdio.stdout.write("downloaded: \{progress}%")
+        if remote_size > 0 {
+          let progress = current_size * 100 / remote_size
+          @stdio.stdout.write("downloaded: \{progress}%")
+        }
       }
       None => break
     }
@@ -146,9 +188,8 @@ pub async fn download_file(url~ : String, dest_dir~ : String) -> String {
   // 4. construct file fullpath and download
   @fs.mkdir(dest_dir, recursive=true, allow_exist=true)
   let file_to_download = filename_from_url(url)
-  println("file_to_download: \{file_to_download}")
   try_download(url, dest_dir + "/" + file_to_download) catch {
     e => println("try_download failed: \{e}")
   }
-  dest_dir + file_to_download
+  dest_dir + "/" + file_to_download
 }
