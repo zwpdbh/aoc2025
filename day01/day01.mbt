@@ -11,14 +11,20 @@ pub(all) suberror Day01Error {
 }
 
 ///|
-async fn stream_input() -> Iter[String] {
+async fn read_input() -> String {
   let download_dir = @utils.PROJECT_ROOT + "/day01" + "/tmp"
   let input_file = @utils.download_file(url=DAY01INPUT, dest_dir=download_dir)
   guard @fs.path_exists(input_file) else { raise InvalidInput }
-  abort("TODO")
+  let conent = @fs.read_file_to_string(input_file)
+
+  conent
 }
 
 ///|
 pub async fn run() -> Unit {
-  let _ = stream_input()
+  let content = read_input()
+  let lines = content.split("\n")
+  for each_line in lines {
+    abort("HOW to do binary patter matching")
+  }
 }

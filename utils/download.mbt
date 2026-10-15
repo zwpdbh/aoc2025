@@ -8,6 +8,7 @@ pub(all) suberror DownloadError {
   DownloadFailed(String)
   /// Redirect `Location` was neither absolute nor origin-relative.
   BadRedirect(String)
+  SaveToFileError
 }
 
 ///|
@@ -18,6 +19,7 @@ impl Show for DownloadError with fn output(self, logger) -> Unit {
     TooManyRedirects(s) => logger.write_string(s)
     DownloadFailed(s) => logger.write_string(s)
     BadRedirect(s) => logger.write_string(s)
+    SaveToFileError => logger.write_string("save_to_file error")
   }
 }
 
@@ -144,7 +146,6 @@ async fn try_download(url~ : String, save_to_file~ : String) -> Unit {
   // 4. remote size == local dest size, skip download
   // 5. otherwise keep read some data from stream until end
   // 6  close stream
-  println("try_download: \{url} into file: \{save_to_file}")
 
   let (resp, body) = open_stream(url)
   let remote_size = match
@@ -164,11 +165,18 @@ async fn try_download(url~ : String, save_to_file~ : String) -> Unit {
   )
   defer dest_file.close()
 
+  if dest_file.size() == remote_size {
+    println("file already downloaded")
+    return
+  }
+
   let mut current_size = 0L
   while remote_size < 0 || current_size != remote_size {
     match body.read_some(max_len=65536) {
       Some(chunk) => {
-        dest_file.write(chunk)
+        dest_file.write(chunk) catch {
+          e => raise SaveToFileError
+        }
         current_size += chunk.length().to_int64()
         if remote_size > 0 {
           let progress = current_size * 100 / remote_size
@@ -188,8 +196,6 @@ pub async fn download_file(url~ : String, dest_dir~ : String) -> String {
   // 4. construct file fullpath and download
   @fs.mkdir(dest_dir, recursive=true, allow_exist=true)
   let file_to_download = filename_from_url(url)
-  try_download(url~, save_to_file=dest_dir + "/" + file_to_download) catch {
-    e => println("try_download failed: \{e}")
-  }
+  try_download(url~, save_to_file=dest_dir + "/" + file_to_download)
   dest_dir + "/" + file_to_download
 }
