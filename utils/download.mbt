@@ -137,14 +137,14 @@ async fn open_stream(url : String) -> (@http.Response, @http.Client) {
 }
 
 ///|
-async fn try_download(url : String, dest : String) -> Unit {
+async fn try_download(url~ : String, save_to_file~ : String) -> Unit {
   // 1. open stream
   // 2. check remote size 
   // 3. comparing with dest file size 
   // 4. remote size == local dest size, skip download
   // 5. otherwise keep read some data from stream until end
   // 6  close stream
-  println("try_download: \{url} into file: \{dest}")
+  println("try_download: \{url} into file: \{save_to_file}")
 
   let (resp, body) = open_stream(url)
   let remote_size = match
@@ -158,7 +158,7 @@ async fn try_download(url : String, dest : String) -> Unit {
   }
 
   let dest_file = @fs.open(
-    dest,
+    save_to_file,
     mode=@fs.WriteOnly,
     create_mode=@fs.CreateOrTruncate,
   )
@@ -188,7 +188,7 @@ pub async fn download_file(url~ : String, dest_dir~ : String) -> String {
   // 4. construct file fullpath and download
   @fs.mkdir(dest_dir, recursive=true, allow_exist=true)
   let file_to_download = filename_from_url(url)
-  try_download(url, dest_dir + "/" + file_to_download) catch {
+  try_download(url~, save_to_file=dest_dir + "/" + file_to_download) catch {
     e => println("try_download failed: \{e}")
   }
   dest_dir + "/" + file_to_download
