@@ -26,12 +26,13 @@ fn filename_from_url(url : String) -> String {
   }
 
   let path = url[:end]
+
   let start = match path.rev_find("/") {
     Some(i) => i + 1
     None => 0
   }
 
-  path[start:0].to_owned()
+  path[start:].to_owned()
 }
 
 ///|
@@ -65,18 +66,11 @@ fn resolve_redirect(current : String, location : String) -> String raise {
 }
 
 ///|
-async fn open_stream(
-  url : String,
-  proxy_url : String?,
-) -> (@http.Response, @http.Client) {
+async fn open_stream(url : String) -> (@http.Response, @http.Client) {
+  println("open_stream: \{url}")
   let mut url = url
   for _ in 0..<5 {
-    let proxy_client = match proxy_url {
-      Some(p) => Some(@http.Client(p))
-      None => None
-    }
-
-    let (resp, body) = @http.get_stream(url, proxy?=proxy_client)
+    let (resp, body) = @http.get_stream(url)
 
     match resp.code {
       301 | 302 | 303 | 307 | 308 as x =>
@@ -90,6 +84,7 @@ async fn open_stream(
         }
       x if x < 200 || x >= 300 => {
         body.close()
+        println("return code is: \{x}")
         raise DownloadError::BadStatus(x, url)
       }
       _ => return (resp, body)
@@ -99,14 +94,16 @@ async fn open_stream(
 }
 
 ///|
-async fn try_download(url : String, dest : String, proxy_url : String?) -> Unit {
+async fn try_download(url : String, dest : String) -> Unit {
   // 1. open stream
   // 2. check remote size 
   // 3. comparing with dest file size 
   // 4. remote size == local dest size, skip download
   // 5. otherwise keep read some data from stream until end
   // 6  close stream
-  let (resp, body) = open_stream(url, proxy_url)
+  println("try_download: \{url} into file: \{dest}")
+
+  let (resp, body) = open_stream(url)
   let remote_size = resp.headers
     .get(@http.CaseInsensitiveString("content-length"))
     .unwrap_or_error(
@@ -149,7 +146,9 @@ pub async fn download_file(url~ : String, dest_dir~ : String) -> String {
   // 4. construct file fullpath and download
   @fs.mkdir(dest_dir, recursive=true, allow_exist=true)
   let file_to_download = filename_from_url(url)
-  let proxy = proxy_url_from_env()
-  try_download(url, dest_dir + file_to_download, proxy)
+  println("file_to_download: \{file_to_download}")
+  try_download(url, dest_dir + "/" + file_to_download) catch {
+    e => println("try_download failed: \{e}")
+  }
   dest_dir + file_to_download
 }

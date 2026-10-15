@@ -3,6 +3,6 @@
 /// Keep main focused; move logic into the library package.
 /// Run with `moon run cmd/main` from the project root.
 async fn main {
-  let _ = @day01.stream_input()
+  let _ = @day01.run()
   println("Hello")
 }
