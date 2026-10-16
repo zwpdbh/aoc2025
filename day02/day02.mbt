@@ -109,22 +109,37 @@ fn process(
   acc~ : Array[Char],
   count~ : Int32,
 ) -> String? {
+  println("current: ~\{current}, rest: \{rest}, acc: \{acc}, count: \{count}")
   match (current, rest, acc) {
     (current, [], []) => {
+      println("case01")
       let rp = RepeatPattern::new(pattern=current, count~)
       return rp.get_invalid()
     }
-    (current, rest, acc) if current == acc =>
+    ([], [x, .. left], acc) =>
+      return process(current=[x], rest=left, acc=[], count=1)
+    ([x], [head, .. left], acc) =>
+      if x == head {
+        return process(current=[x], rest=left, acc=[], count=count + 1)
+      } else {
+        return process(current=[x], rest=left, acc=[head], count~)
+      }
+    (current, rest, acc) if current == acc => {
+      println("case02")
       return process(current~, rest~, acc=[], count=count + 1)
+    }
     (current, rest, acc) if current.length() == acc.length() => {
       let mut restored = []
       for _ in 0..<count {
         restored += current
       }
+      println("case03")
       return process(current=restored + acc, rest~, acc=[], count=1)
     }
-    (current, [x, .. left], acc) if current.length() < acc.length() =>
+    (current, [x, .. left], acc) if current.length() < acc.length() => {
+      println("case04")
       return process(current~, rest=left, acc=acc + [x], count~)
+    }
     _ => abort("UNREACHABLE")
   }
 }
