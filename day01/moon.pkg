@@ -1,4 +1,4 @@
-warnings = "-unused_value-unused_type_declaration-unused_package"
+warnings = "-unused_value-unused_type_declaration-unused_package-unused_async"
 
 import {
   "zw/utils",

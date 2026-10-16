@@ -14,7 +14,8 @@ pub(all) suberror Day01Error {
 ///|
 async fn read_input() -> String {
   let download_dir = @utils.PROJECT_ROOT + "/day01" + "/tmp"
-  let input_file = @utils.download_file(url=DAY01INPUT, dest_dir=download_dir)
+  // let input_file = @utils.download_file(url=DAY01INPUT, dest_dir=download_dir)
+  let input_file = "/home/zw/code/moonbit_programming/aoc2025/day01/tmp/input"
   guard @fs.path_exists(input_file) else {
     raise InvalidInput("file now exist")
   }
@@ -50,11 +51,12 @@ fn Dial::rotate(self : Dial, rotate : Rotate) -> Int32 {
     R(n) =>
       for _ in 0..<n {
         self.at += 1
+
+        if self.at == 100 {
+          self.at = 0
+        }
         if self.at == 0 {
           triggered += 1
-        }
-        if self.at == 100 {
-          self.at = 1
         }
       }
   }
@@ -63,17 +65,25 @@ fn Dial::rotate(self : Dial, rotate : Rotate) -> Int32 {
 }
 
 ///|
-pub async fn run() -> Unit {
-  let content = read_input()
+fn get_passwd_from(content~ : String) -> Int32 raise Day01Error {
   let lines = content.split("\n")
   let dial = Dial::new(50)
   let mut triggered = 0
   for each_line in lines {
+    if each_line.trim().is_empty() {
+      continue
+    }
     let rotate = parse_to_rotate(each_line.to_owned())
     triggered += dial.rotate(rotate)
   }
+  triggered
+}
 
-  println("passwd is: \{triggered}")
+///|
+pub async fn run() -> Unit {
+  let content = read_input()
+  let passwd = get_passwd_from(content~)
+  println("passwd is: \{passwd}")
 }
 
 ///|
@@ -92,10 +102,13 @@ impl Show for Rotate with fn output(self, logger) -> Unit {
 
 ///|
 fn parse_to_rotate(line : String) -> Rotate raise Day01Error {
-  match line.to_array() {
+  match line.trim().to_array() {
     ['L', .. rest] => L(parse_num(rest))
     ['R', .. rest] => R(parse_num(rest))
-    others => raise InvalidFormat(line)
+    others => {
+      println("line: \{line} is invalid format")
+      raise InvalidFormat(line)
+    }
   }
 }
 
@@ -134,4 +147,24 @@ fn parse_to_n(c : Char) -> Int32 raise Day01Error {
 test "protocol" {
   println("\{parse_to_rotate("L98")}")
   assert_eq(L(98), parse_to_rotate("L98"))
+}
+
+///|
+test "day01b" {
+  let content =
+    #| L68
+    #| L30
+    #| R48
+    #| L5
+    #| R60
+    #| L55
+    #| L1
+    #| L99
+    #| R14
+    #| L82
+    #|
+
+  let passwd = get_passwd_from(content~)
+
+  assert_eq(6, passwd)
 }
