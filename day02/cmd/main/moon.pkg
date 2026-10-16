@@ -1,0 +1,5 @@
+// import {
+//   "username/day02" @lib,
+// }
+
+pkgtype(kind: "executable")

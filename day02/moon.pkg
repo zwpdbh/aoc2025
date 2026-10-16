@@ -1,0 +1,5 @@
+warnings = "-unused_value-unused_type_declaration-unused_package"
+
+import {
+  "moonbitlang/x/fs",
+}
