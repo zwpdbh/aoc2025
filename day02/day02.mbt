@@ -61,45 +61,76 @@ fn get_invalid_case02(input : StringView) -> Array[Int64] raise Day02Error {
 }
 
 ///|
+priv struct RepeatPattern {
+  pattern : String
+  times : Int32
+}
+
+///|
+fn RepeatPattern::new(pattern~ : Array[Char], count~ : Int32) -> RepeatPattern {
+  RepeatPattern::{ pattern: pattern |> String::from_array(), times: count, }
+}
+
+///|
+fn RepeatPattern::to_int(self : Self) -> Int64 raise Day02Error {
+  let s = self.pattern |> n_repeat(self.times)
+  let n : Int64 = @string.from_str(s) catch { e => raise InvalidStringToNum }
+  n
+}
+
+///|
+fn RepeatPattern::get_invalid(self : Self) -> String? {
+  if self.times > 1 {
+    Some(self.to_string())
+  } else {
+    None
+  }
+}
+
+///|
+fn RepeatPattern::to_string(self : Self) -> String {
+  self.pattern |> n_repeat(self.times)
+}
+
+///|
 /// Now, an ID is invalid if it is made only of some sequence of 
 /// digits repeated at least twice. So, 12341234 (1234 two times), 
 /// 123123123 (123 three times), 1212121212 (12 five times), 
 /// and 1111111 (1 seven times) are all invalid IDs.
 fn process_case02(input : String) -> String? {
   let chars = input.iter().collect()
-  process([], chars, [], 1)
+  process(current=[], rest=chars, acc=[], count=1)
 }
 
 ///|
 fn process(
-  current : Array[Char],
-  left : ArrayView[Char],
-  acc : Array[Char],
-  count : Int32,
+  current~ : Array[Char],
+  rest~ : ArrayView[Char],
+  acc~ : Array[Char],
+  count~ : Int32,
 ) -> String? {
-  match (current, left, acc) {
-    ([], [head, .. rest], []) => process([head], rest, [], 1)
-    ([x], [head, .. rest], []) if x == head => process([x], rest, [], count + 1)
-    (current, [], []) =>
-      if count > 1 {
-        Some(String::from_array(current) |> n_string(count))
+  match (current, rest, acc) {
+    (current, [], []) => {
+      let rp = RepeatPattern::new(pattern=current, count~)
+      return rp.get_invalid()
+    }
+    (current, [], acc) =>
+      if current == acc {
+        let rp = RepeatPattern::new(pattern=current, count=count + 1)
+        return Some(rp.to_string())
       } else {
-        None
-      }
-    (_, [head, .. rest], acc) => process(current, rest, acc + [head], count)
-    (current, left, acc) if current == acc =>
-      process(current, left, [], count + 1)
-    (current, left, acc) =>
-      if current.length() > acc.length() {
-        process(current, left, acc, count)
-      } else {
-        process(current + acc, left, [], count)
+        let mut scaned = []
+        for _ in 0..<count {
+          scaned += current
+        }
+        return process(current=scaned + acc, rest=[], acc=[], count=1)
       }
   }
+  abort("TODO")
 }
 
 ///|
-fn n_string(s : String, n : Int32) -> String {
+fn n_repeat(s : String, n : Int32) -> String {
   let mut acc = ""
   for _ in 0..<n {
     acc += s
