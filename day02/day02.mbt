@@ -8,6 +8,7 @@ pub(all) suberror Day02Error {
   InvalidEnd
   InvalidInputFile
   InvalidCase
+  InvalidStringToNum
 }
 
 ///|
@@ -44,7 +45,15 @@ fn get_invalid_case02(input : StringView) -> Array[Int64] raise Day02Error {
   let invalids : Array[Int64] = []
   for each in start..<=end {
     let each_str = "\{each}"
-    invalids.append([process_case02(each_str)])
+    match process_case02(each_str) {
+      None => continue
+      Some(s) => {
+        let n : Int64 = @string.from_str(s) catch {
+          e => raise InvalidStringToNum
+        }
+        invalids.append([n])
+      }
+    }
   }
   invalids
 }
@@ -54,9 +63,41 @@ fn get_invalid_case02(input : StringView) -> Array[Int64] raise Day02Error {
 /// digits repeated at least twice. So, 12341234 (1234 two times), 
 /// 123123123 (123 three times), 1212121212 (12 five times), 
 /// and 1111111 (1 seven times) are all invalid IDs.
-fn process_case02(input : String) -> Int64 {
-  0
+fn process_case02(input : String) -> String? {
+  let chars = input.iter().collect()
+  process([], chars, [], 0)
 }
+
+///|
+fn process(
+  current : Array[Char],
+  left : ArrayView[Char],
+  acc : Array[Char],
+  count : Int32,
+) -> String? {
+  match (current, left, acc) {
+    (current, [], []) =>
+      if count > 1 {
+        Some(String::from_array(current))
+      } else {
+        None
+      }
+    ([], [head, .. rest], []) => process([head], rest, [], 0)
+    ([x], [head, .. rest], []) if x == head =>
+      process(current, rest, [x], count)
+    (_, [head, .. rest], acc) => process(current, rest, acc + [head], count)
+    (current, left, acc) if current == acc =>
+      process(current, left, [], count + 1)
+    (current, left, acc) =>
+      if current.length() > acc.length() {
+        process(current, left, acc, count)
+      } else {
+        process(current + acc, left, [], count)
+      }
+  }
+}
+
+///|
 
 ///|
 pub fn run(case : String) -> Unit raise Day02Error {
@@ -81,33 +122,18 @@ pub fn run(case : String) -> Unit raise Day02Error {
 }
 
 ///|
-test "11-22" {
+test "case01" {
   assert_eq(get_invalid_case01("11-22"), [11, 22])
-}
-
-///|
-test "95-115" {
   assert_eq(get_invalid_case01("95-115"), [99])
-}
-
-///|
-test "998-1012" {
   assert_eq(get_invalid_case01("998-1012"), [1010])
-}
-
-///|
-test "1188511880-1188511890" {
   assert_eq(get_invalid_case01("1188511880-1188511890"), [1188511885])
-}
-
-///|
-test "222220-222224" {
   assert_eq(get_invalid_case01("222220-222224"), [222222])
+  assert_eq(get_invalid_case01("1698522-1698528"), [])
 }
 
 ///|
-test "1698522-1698528" {
-  assert_eq(get_invalid_case01("1698522-1698528"), [])
+test "11" {
+  assert_eq(process_case02("11"), Some("11"))
 }
 
 ///|
