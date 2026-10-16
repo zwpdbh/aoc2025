@@ -114,19 +114,19 @@ fn process(
       let rp = RepeatPattern::new(pattern=current, count~)
       return rp.get_invalid()
     }
-    (current, [], acc) =>
-      if current == acc {
-        let rp = RepeatPattern::new(pattern=current, count=count + 1)
-        return Some(rp.to_string())
-      } else {
-        let mut scaned = []
-        for _ in 0..<count {
-          scaned += current
-        }
-        return process(current=scaned + acc, rest=[], acc=[], count=1)
+    (current, rest, acc) if current == acc =>
+      return process(current~, rest~, acc=[], count=count + 1)
+    (current, rest, acc) if current.length() == acc.length() => {
+      let mut restored = []
+      for _ in 0..<count {
+        restored += current
       }
+      return process(current=restored + acc, rest~, acc=[], count=1)
+    }
+    (current, [x, .. left], acc) if current.length() < acc.length() =>
+      return process(current~, rest=left, acc=acc + [x], count~)
+    _ => abort("UNREACHABLE")
   }
-  abort("TODO")
 }
 
 ///|
