@@ -1,5 +1,6 @@
-warnings = "-unused_value-unused_type_declaration-unused_package"
+warnings = "-unused_value-unused_type_declaration-unused_package-unused_constructor"
 
 import {
   "moonbitlang/x/fs",
+  "moonbitlang/core/string",
 }
