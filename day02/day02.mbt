@@ -51,7 +51,9 @@ fn get_invalid_case02(input : StringView) -> Array[Int64] raise Day02Error {
         let n : Int64 = @string.from_str(s) catch {
           e => raise InvalidStringToNum
         }
-        invalids.append([n])
+        if n >= start && n <= end {
+          invalids.append([n])
+        }
       }
     }
   }
@@ -65,7 +67,7 @@ fn get_invalid_case02(input : StringView) -> Array[Int64] raise Day02Error {
 /// and 1111111 (1 seven times) are all invalid IDs.
 fn process_case02(input : String) -> String? {
   let chars = input.iter().collect()
-  process([], chars, [], 0)
+  process([], chars, [], 1)
 }
 
 ///|
@@ -76,15 +78,14 @@ fn process(
   count : Int32,
 ) -> String? {
   match (current, left, acc) {
+    ([], [head, .. rest], []) => process([head], rest, [], 1)
+    ([x], [head, .. rest], []) if x == head => process([x], rest, [], count + 1)
     (current, [], []) =>
       if count > 1 {
-        Some(String::from_array(current))
+        Some(String::from_array(current) |> n_string(count))
       } else {
         None
       }
-    ([], [head, .. rest], []) => process([head], rest, [], 0)
-    ([x], [head, .. rest], []) if x == head =>
-      process(current, rest, [x], count)
     (_, [head, .. rest], acc) => process(current, rest, acc + [head], count)
     (current, left, acc) if current == acc =>
       process(current, left, [], count + 1)
@@ -95,6 +96,15 @@ fn process(
         process(current + acc, left, [], count)
       }
   }
+}
+
+///|
+fn n_string(s : String, n : Int32) -> String {
+  let mut acc = ""
+  for _ in 0..<n {
+    acc += s
+  }
+  acc
 }
 
 ///|
@@ -134,6 +144,11 @@ test "case01" {
 ///|
 test "11" {
   assert_eq(process_case02("11"), Some("11"))
+}
+
+///|
+test "111" {
+  assert_eq(process_case02("111"), Some("111"))
 }
 
 ///|
