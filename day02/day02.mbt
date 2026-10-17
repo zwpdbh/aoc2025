@@ -120,10 +120,15 @@ fn process(
         process(current~, rest=others, acc=[], count=count + 1)
       } else if current.length() == (acc + [x]).length() {
         println("case02-b")
-        process(current=current + acc + [x], rest=others, acc=[], count=1)
+        process(
+          current=n_times(current, count) + acc + [x],
+          rest=others,
+          acc=[],
+          count=1,
+        )
       } else {
         println("case02-c")
-        process(current~, rest=others, acc=acc + [x], count=1)
+        process(current~, rest=others, acc=acc + [x], count~)
       }
     (current, [], acc) => {
       println("case03")
@@ -135,6 +140,15 @@ fn process(
 ///|
 fn n_repeat(s : String, n : Int32) -> String {
   let mut acc = ""
+  for _ in 0..<n {
+    acc += s
+  }
+  acc
+}
+
+///|
+fn n_times(s : Array[Char], n : Int32) -> Array[Char] {
+  let mut acc = []
   for _ in 0..<n {
     acc += s
   }
@@ -193,6 +207,16 @@ test "111" {
 ///|
 test "1010" {
   assert_eq(process_case02("1010"), Some("1010"))
+}
+
+///|
+test "2121212121" {
+  assert_eq(process_case02("2121212121"), Some("2121212121"))
+}
+
+///|
+test "1188511885" {
+  assert_eq(process_case02("1188511885"), Some("1188511885"))
 }
 
 ///|
