@@ -79,17 +79,12 @@ fn RepeatPattern::to_int(self : Self) -> Int64 raise Day02Error {
 }
 
 ///|
-fn RepeatPattern::get_invalid(self : Self) -> String? {
+fn RepeatPattern::to_string(self : Self) -> String? {
   if self.times > 1 {
-    Some(self.to_string())
+    Some(self.pattern |> n_repeat(self.times))
   } else {
     None
   }
-}
-
-///|
-fn RepeatPattern::to_string(self : Self) -> String {
-  self.pattern |> n_repeat(self.times)
 }
 
 ///|
@@ -111,7 +106,29 @@ fn process(
 ) -> String? {
   println("current: ~\{current}, rest: \{rest}, acc: \{acc}, count: \{count}")
   match (current, rest, acc) {
-    _ => abort("UNREACHABLE")
+    (current, [], []) => {
+      let rp = RepeatPattern::new(pattern=current, count~)
+      rp.to_string()
+    }
+    ([], [x, .. others], []) => {
+      println("case01")
+      process(current=[x], rest=others, acc=[], count=1)
+    }
+    (current, [x, .. others], acc) =>
+      if current == acc + [x] {
+        println("case02-a")
+        process(current~, rest=others, acc=[], count=count + 1)
+      } else if current.length() == (acc + [x]).length() {
+        println("case02-b")
+        process(current=current + acc + [x], rest=others, acc=[], count=1)
+      } else {
+        println("case02-c")
+        process(current~, rest=others, acc=acc + [x], count=1)
+      }
+    (current, [], acc) => {
+      println("case03")
+      None
+    }
   }
 }
 
@@ -161,6 +178,11 @@ test "case01" {
 ///|
 test "11" {
   assert_eq(process_case02("11"), Some("11"))
+}
+
+///|
+test "12" {
+  assert_eq(process_case02("12"), None)
 }
 
 ///|
