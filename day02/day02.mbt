@@ -104,22 +104,21 @@ fn process(
   acc~ : Array[Char],
   count~ : Int32,
 ) -> String? {
-  println("current: ~\{current}, rest: \{rest}, acc: \{acc}, count: \{count}")
+  // println("current: ~\{current}, rest: \{rest}, acc: \{acc}, count: \{count}")
   match (current, rest, acc) {
     (current, [], []) => {
       let rp = RepeatPattern::new(pattern=current, count~)
       rp.to_string()
     }
-    ([], [x, .. others], []) => {
-      println("case01")
+    ([], [x, .. others], []) =>
+      // println("case01")
       process(current=[x], rest=others, acc=[], count=1)
-    }
     (current, [x, .. others], acc) =>
       if current == acc + [x] {
-        println("case02-a")
+        // println("case02-a")
         process(current~, rest=others, acc=[], count=count + 1)
       } else if current.length() == (acc + [x]).length() {
-        println("case02-b")
+        // println("case02-b")
         let a = process(
           current=n_times(current, count) + acc + [x],
           rest=others,
@@ -138,7 +137,7 @@ fn process(
           (_, _) => None
         }
       } else {
-        println("case02-c")
+        // println("case02-c")
         process(current~, rest=others, acc=acc + [x], count~)
       }
     (current, [], acc) => None
