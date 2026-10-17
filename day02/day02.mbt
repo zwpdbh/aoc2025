@@ -275,3 +275,27 @@ test "824824821-824824827" {
 test "2121212118-2121212124" {
   assert_eq(get_invalid_case02("2121212118-2121212124"), [2121212121])
 }
+
+///|
+test "advanaced" {
+  let input =
+    #| 11-22
+    #| 95-115
+    #| 998-1012
+    #| 1188511880-1188511890
+    #| 222220-222224
+    #| 1698522-1698528
+    #| 446443-446449
+    #| 38593856-38593862
+    #| 565653-565659
+    #| 824824821-824824827
+    #| 2121212118-2121212124
+  let lines = input.split("\n")
+  let mut total : Int64 = 0
+  for each in lines {
+    let invalids = get_invalid_case02(each.trim())
+    total += invalids.fold(init=0, (sum, e) => e + sum)
+  }
+
+  assert_eq(total, 4174379265)
+}
