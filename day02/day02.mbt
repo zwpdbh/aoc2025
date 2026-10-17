@@ -120,27 +120,28 @@ fn process(
         process(current~, rest=others, acc=[], count=count + 1)
       } else if current.length() == (acc + [x]).length() {
         println("case02-b")
-        process(
+        let a = process(
           current=n_times(current, count) + acc + [x],
           rest=others,
           acc=[],
           count=1,
         )
+        let b = process(
+          current=n_times(current, count) + acc,
+          rest=others,
+          acc=[x],
+          count~,
+        )
+        match (a, b) {
+          (Some(x), None) => Some(x)
+          (None, Some(y)) => Some(y)
+          (_, _) => None
+        }
       } else {
         println("case02-c")
         process(current~, rest=others, acc=acc + [x], count~)
       }
-    (current, [], acc) =>
-      match current.rev() {
-        [tail, .. rest] =>
-          if rest.rev() == [tail] + acc {
-            let rp = RepeatPattern::new(pattern=rest.rev(), count=count + 1)
-            rp.to_string()
-          } else {
-            None
-          }
-        _ => None
-      }
+    (current, [], acc) => None
   }
 }
 
