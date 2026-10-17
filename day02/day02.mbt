@@ -227,6 +227,11 @@ test "1188511885" {
 }
 
 ///|
+test "824824824" {
+  assert_eq(process_case02("824824824"), Some("824824824"))
+}
+
+///|
 test "11-22 case02" {
   assert_eq(get_invalid_case02("11-22"), [11, 22])
 }
