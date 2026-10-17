@@ -130,10 +130,17 @@ fn process(
         println("case02-c")
         process(current~, rest=others, acc=acc + [x], count~)
       }
-    (current, [], acc) => {
-      println("case03")
-      None
-    }
+    (current, [], acc) =>
+      match current.rev() {
+        [tail, .. rest] =>
+          if rest.rev() == [tail] + acc {
+            let rp = RepeatPattern::new(pattern=rest.rev(), count=count + 1)
+            rp.to_string()
+          } else {
+            None
+          }
+        _ => None
+      }
   }
 }
 
