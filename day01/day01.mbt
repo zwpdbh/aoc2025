@@ -82,8 +82,11 @@ fn get_passwd_from(content~ : String) -> Int32 raise Day01Error {
 ///|
 pub async fn run() -> Unit {
   let content = read_input()
+  let start = @env.now()
   let passwd = get_passwd_from(content~)
+  let elapsed = @env.now() - start
   println("passwd is: \{passwd}")
+  println("elapsed: \{elapsed} ms")
 }
 
 ///|

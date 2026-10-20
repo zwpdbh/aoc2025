@@ -3,4 +3,5 @@ warnings = "-unused_value-unused_type_declaration-unused_package-unused_construc
 import {
   "moonbitlang/x/fs",
   "moonbitlang/core/string",
+  "moonbitlang/core/env",
 }

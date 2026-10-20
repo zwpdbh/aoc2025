@@ -88,6 +88,7 @@ pub fn run(case : String) -> Unit raise Day02Error {
     e => raise InvalidInputFile
   }
 
+  let start = @env.now()
   let mut total : Int64 = 0
   for each_line in content.split(",") {
     let invalids = match case {
@@ -99,5 +100,7 @@ pub fn run(case : String) -> Unit raise Day02Error {
       total += each
     }
   }
+  let elapsed = @env.now() - start
   println("add all of invalid IDs equal to: \{total}")
+  println("elapsed: \{elapsed} ms")
 }
