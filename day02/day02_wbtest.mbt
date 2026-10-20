@@ -14,37 +14,44 @@ test "case01" {
 
 ///|
 test "11" {
-  assert_eq(process_case02("11"), Some("11"))
+  let l = Lexer::new("11")
+  assert_eq(l.find_invalid(), Some("11"))
 }
 
 ///|
 test "12" {
-  assert_eq(process_case02("12"), None)
+  let l = Lexer::new("12")
+  assert_eq(l.find_invalid(), None)
 }
 
 ///|
 test "111" {
-  assert_eq(process_case02("111"), Some("111"))
+  let l = Lexer::new("111")
+  assert_eq(l.find_invalid(), Some("111"))
 }
 
 ///|
 test "1010" {
-  assert_eq(process_case02("1010"), Some("1010"))
+  let l = Lexer::new("1010")
+  assert_eq(l.find_invalid(), Some("1010"))
 }
 
 ///|
 test "2121212121" {
-  assert_eq(process_case02("2121212121"), Some("2121212121"))
+  let l = Lexer::new("2121212121")
+  assert_eq(l.find_invalid(), Some("2121212121"))
 }
 
 ///|
 test "1188511885" {
-  assert_eq(process_case02("1188511885"), Some("1188511885"))
+  let l = Lexer::new("1188511885")
+  assert_eq(l.find_invalid(), Some("1188511885"))
 }
 
 ///|
 test "824824824" {
-  assert_eq(process_case02("824824824"), Some("824824824"))
+  let l = Lexer::new("824824824")
+  assert_eq(l.find_invalid(), Some("824824824"))
 }
 
 ///|

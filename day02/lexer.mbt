@@ -54,19 +54,6 @@ fn Lexer::find_invalid(self : Self) -> String? {
 }
 
 ///|
-fn Lexer::read_char(self : Self) -> Char? {
-  if self.read_position >= self.input.length() {
-    self.ch = None
-  } else {
-    self.ch = self.input.get_char(self.read_position)
-  }
-
-  self.position = self.read_position
-  self.read_position += 1
-  self.input.get_char(self.position)
-}
-
-///|
 fn Lexer::next_char(self : Self) -> Unit {
   let acc = match self.ch {
     Some(c) => self.acc + "\{c}"
@@ -85,10 +72,29 @@ fn Lexer::next_char(self : Self) -> Unit {
 }
 
 ///|
+fn Lexer::read_char(self : Self) -> Char? {
+  if self.read_position >= self.input.length() {
+    self.ch = None
+  } else {
+    self.ch = self.input.get_char(self.read_position)
+  }
+
+  self.position = self.read_position
+  self.read_position += 1
+  self.input.get_char(self.position)
+}
+
+///|
 /// Compare if b is sub string of a from beginning of it
 fn is_sub(a : String, b : String) -> Bool {
-  if a.length() < b.length() {
+  if a.is_empty() {
     return false
+  }
+  if b.is_empty() {
+    return false
+  }
+  if a.length() < b.length() {
+    abort("when comarping substring, a should be longer than b")
   }
   compare(a.to_array(), b.to_array(), true)
 }
@@ -97,7 +103,7 @@ fn is_sub(a : String, b : String) -> Bool {
 fn compare(a : Array[Char], b : Array[Char], acc : Bool) -> Bool {
   match (a, b) {
     ([x, .. resta], [y, .. restb]) =>
-      if a == b {
+      if x == y {
         compare(resta.to_owned(), restb.to_owned(), true)
       } else {
         return false
@@ -108,24 +114,27 @@ fn compare(a : Array[Char], b : Array[Char], acc : Bool) -> Bool {
 }
 
 ///|
-test "test substring" {
+test "test substring 01 " {
   let a = "123"
   let b = "12"
   assert_true(is_sub(a, b))
 }
 
 ///|
-test "case01" {
-  let l = Lexer::new("121212")
-  let p = l.find_invalid()
-  guard p is Some(v) else { abort("Failed to find repeated pattern") }
-  assert_eq(v, "121212")
+test "test substring 00" {
+  assert_false(is_sub("", "b"))
 }
 
 ///|
-test "case02" {
-  let l = Lexer::new("1111")
-  let p = l.find_invalid()
-  guard p is Some(v) else { abort("failed to find repeated pattern") }
-  assert_eq(v, "1111")
+test "test substring 02 " {
+  let a = "123"
+  let b = "124"
+  assert_false(is_sub(a, b))
+}
+
+///|
+test "test substring 03 " {
+  let a = "1"
+  let b = ""
+  assert_false(is_sub(a, b))
 }
