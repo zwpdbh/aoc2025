@@ -1,0 +1,22 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zw/utils"
+
+// Values
+pub const PROJECT_ROOT : String = "/home/zw/code/moonbit_programming/aoc2025"
+
+pub async fn download_file(url~ : String, dest_dir~ : String) -> String
+
+// Errors
+pub(all) suberror DownloadError {
+  BadStatus(Int32, String)
+  TooManyRedirects(String)
+  DownloadFailed(String)
+  BadRedirect(String)
+  SaveToFileError
+}
+
+// Types and methods
+
+// Type aliases
+
+// Traits

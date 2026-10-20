@@ -1,0 +1,17 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zw/day01"
+
+// Values
+pub async fn run() -> Unit
+
+// Errors
+pub(all) suberror Day01Error {
+  InvalidInput(String)
+  InvalidFormat(String)
+}
+
+// Types and methods
+
+// Type aliases
+
+// Traits
