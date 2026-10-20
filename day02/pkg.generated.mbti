@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "username/day02"
+package "zw/day02"
 
 // Values
 pub fn run(String) -> Unit raise Day02Error
@@ -17,14 +17,10 @@ pub(all) suberror Day02Error {
 pub struct Lexer {
   input : String
   mut read_position : Int32
-  mut position : Int32
-  mut ch : Char?
-  pattern : Pattern
-  mut acc : String
+  mut border : Int32
+  pi : Array[Int32]
 }
 pub fn Lexer::new(String) -> Self
-
-type Pattern
 
 // Type aliases
 

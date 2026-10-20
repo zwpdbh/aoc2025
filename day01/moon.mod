@@ -19,7 +19,7 @@ repository = ""
 
 license = "Apache-2.0"
 
-keywords = []
+keywords = [ ]
 
 preferred_target = "native"
 
@@ -30,4 +30,3 @@ import {
   "moonbitlang/x@0.5.5",
   "moonbitlang/async@0.22.4",
 }
-

@@ -1,140 +1,59 @@
 ///|
+// A lexer that detects whether its input is a repeated pattern:
+// some digit sequence repeated two or more times (e.g. "55", "6464",
+// "123123123"). It consumes characters one at a time while maintaining
+// the KMP prefix function, so detection is a single streaming pass.
+
+///|
 pub struct Lexer {
   input : String
   mut read_position : Int32
-  mut position : Int32
-  mut ch : Char?
-  pattern : Pattern
-  mut acc : String
-}
-
-///|
-struct Pattern {
-  mut value : String
-  mut repeated : Int32
-}
-
-///|
-fn Pattern::to_string(self : Self) -> String {
-  let mut acc = ""
-  for _ in 0..<self.repeated {
-    acc += self.value
-  }
-  acc
+  // Length of the longest proper border of the prefix consumed so far.
+  mut border : Int32
+  // KMP prefix function: pi[i] = border length of input[:i+1].
+  pi : Array[Int32]
 }
 
 ///|
 pub fn Lexer::new(input : String) -> Lexer {
-  let l = Lexer::{
-    input,
-    read_position: 0,
-    position: -1,
-    ch: None,
-    pattern: Pattern::{ value: "", repeated: 1, },
-    acc: "",
-  }
-  let _ = l.read_char()
-  l
-}
-
-///|
-fn Lexer::find_invalid(self : Self) -> String? {
-  while true {
-    match self.ch {
-      None => break
-      Some(_) => self.next_char()
-    }
-  }
-
-  if self.pattern.repeated > 1 {
-    Some(self.pattern.to_string())
-  } else {
-    None
-  }
-}
-
-///|
-fn Lexer::next_char(self : Self) -> Unit {
-  let acc = match self.ch {
-    Some(c) => self.acc + "\{c}"
-    None => self.acc
-  }
-
-  if acc == self.pattern.value {
-    self.pattern.repeated += 1
-    self.acc = ""
-  } else if !is_sub(self.pattern.value, self.acc) {
-    self.pattern.value = self.pattern.to_string() + acc
-    self.pattern.repeated = 1
-    self.acc = ""
-  }
-  let _ = self.read_char()
+  Lexer::{ input, read_position: 0, border: 0, pi: [], }
 }
 
 ///|
 fn Lexer::read_char(self : Self) -> Char? {
   if self.read_position >= self.input.length() {
-    self.ch = None
-  } else {
-    self.ch = self.input.get_char(self.read_position)
+    return None
   }
-
-  self.position = self.read_position
+  let c = self.input.get_char(self.read_position).unwrap()
   self.read_position += 1
-  self.input.get_char(self.position)
-}
-
-///|
-/// Compare if b is sub string of a from beginning of it
-fn is_sub(a : String, b : String) -> Bool {
-  if a.is_empty() {
-    return false
+  // The first character always has an empty proper border.
+  if self.pi.is_empty() {
+    self.pi.push(0)
+    return Some(c)
   }
-  if b.is_empty() {
-    return false
+  // KMP step: extend the border of the prefix with the new character.
+  while self.border > 0 && self.input.get_char(self.border) != Some(c) {
+    self.border = self.pi[self.border - 1]
   }
-  if a.length() < b.length() {
-    abort("when comarping substring, a should be longer than b")
+  if self.input.get_char(self.border) == Some(c) {
+    self.border += 1
   }
-  compare(a.to_array(), b.to_array(), true)
+  self.pi.push(self.border)
+  Some(c)
 }
 
 ///|
-fn compare(a : Array[Char], b : Array[Char], acc : Bool) -> Bool {
-  match (a, b) {
-    ([x, .. resta], [y, .. restb]) =>
-      if x == y {
-        compare(resta.to_owned(), restb.to_owned(), true)
-      } else {
-        return false
-      }
-    (a, []) => return acc
-    _other => false
+fn Lexer::find_invalid(self : Self) -> String? {
+  while self.read_char() is Some(_) {
+
   }
-}
-
-///|
-test "test substring 01 " {
-  let a = "123"
-  let b = "12"
-  assert_true(is_sub(a, b))
-}
-
-///|
-test "test substring 00" {
-  assert_false(is_sub("", "b"))
-}
-
-///|
-test "test substring 02 " {
-  let a = "123"
-  let b = "124"
-  assert_false(is_sub(a, b))
-}
-
-///|
-test "test substring 03 " {
-  let a = "1"
-  let b = ""
-  assert_false(is_sub(a, b))
+  let n = self.input.length()
+  // The shortest repeating unit has length n - border. The whole string
+  // is a repetition iff that unit is strictly shorter and tiles n evenly.
+  let period = n - self.border
+  if period < n && n % period == 0 {
+    Some(self.input)
+  } else {
+    None
+  }
 }

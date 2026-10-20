@@ -9,7 +9,7 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "username/day02"
+name = "zw/day02"
 
 version = "0.1.0"
 
@@ -19,7 +19,7 @@ repository = ""
 
 license = "Apache-2.0"
 
-keywords = []
+keywords = [ ]
 
 preferred_target = "native"
 
@@ -29,4 +29,3 @@ import {
   "zw/utils@0.1.0",
   "moonbitlang/x@0.5.5",
 }
-
