@@ -115,9 +115,17 @@ test "test substring" {
 }
 
 ///|
-test "12121212" {
+test "case01" {
   let l = Lexer::new("121212")
   let p = l.find_invalid()
   guard p is Some(v) else { abort("Failed to find repeated pattern") }
   assert_eq(v, "121212")
+}
+
+///|
+test "case02" {
+  let l = Lexer::new("1111")
+  let p = l.find_invalid()
+  guard p is Some(v) else { abort("failed to find repeated pattern") }
+  assert_eq(v, "1111")
 }
