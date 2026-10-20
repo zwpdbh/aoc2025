@@ -20,7 +20,7 @@ fn Pattern::to_string(self : Self) -> String {
   for _ in 0..<self.repeated {
     acc += self.value
   }
-  self.value
+  acc
 }
 
 ///|
@@ -76,7 +76,6 @@ fn Lexer::next_char(self : Self) -> Unit {
   if acc == self.pattern.value {
     self.pattern.repeated += 1
     self.acc = ""
-    // TODO compare if current ac is a substring of current pattern.value
   } else if !is_sub(self.pattern.value, self.acc) {
     self.pattern.value = self.pattern.to_string() + acc
     self.pattern.repeated = 1
@@ -113,4 +112,12 @@ test "test substring" {
   let a = "123"
   let b = "12"
   assert_true(is_sub(a, b))
+}
+
+///|
+test "12121212" {
+  let l = Lexer::new("121212")
+  let p = l.find_invalid()
+  guard p is Some(v) else { abort("Failed to find repeated pattern") }
+  assert_eq(v, "121212")
 }
