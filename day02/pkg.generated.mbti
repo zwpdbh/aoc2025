@@ -14,13 +14,6 @@ pub(all) suberror Day02Error {
 }
 
 // Types and methods
-pub struct Lexer {
-  input : String
-  mut read_position : Int32
-  mut border : Int32
-  pi : Array[Int32]
-}
-pub fn Lexer::new(String) -> Self
 
 // Type aliases
 

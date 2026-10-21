@@ -15,12 +15,12 @@ pub(all) suberror Day02Error {
 fn get_invalid_case01(input : StringView) -> Array[Int64] raise Day02Error {
   let (x, y) = input.split_once("-").unwrap()
   let start : Int64 = @string.from_str(x) catch {
-    e => {
+    _e => {
       println("\{x} is invalid")
       raise InvalidStart
     }
   }
-  let end : Int64 = @string.from_str(y) catch { e => raise InvalidEnd }
+  let end : Int64 = @string.from_str(y) catch { _e => raise InvalidEnd }
   let invalids : Array[Int64] = []
   for each in start..<=end {
     let each_str = "\{each}"
@@ -38,19 +38,51 @@ fn get_invalid_case01(input : StringView) -> Array[Int64] raise Day02Error {
 }
 
 ///|
+/// Return the input if it is some digit sequence repeated two or more times,
+/// otherwise return None.
+/// The general idea is: 
+/// try every possible repeating-unit length, and check whether the string is that unit repeated.
+fn find_invalid(input : String) -> String? {
+  let n = input.length()
+  // unit_length is length of repeating candidate's length, since we are testing if there at least repeating twice
+  // the maxium repeating candidate's length must be equal to the half of the input string
+  for unit_length in 1..<=(n / 2) {
+    // the repeating units's length must also be： Divisible of the length of input string
+    if n % unit_length != 0 {
+      continue
+    }
+
+    // This checks whether the string really is that unit repeated.
+    let mut matches = true
+    for i in unit_length..<n {
+      let current_char = input.get_char(i)
+      // that is the key part: exepcted_char's index is the current examing one's index % the length of the repeated unit
+      let expected_char = input.get_char(i % unit_length)
+      if current_char != expected_char {
+        matches = false
+        // only exits the loop it is directly inside.
+        break
+      }
+    }
+    if matches {
+      return Some(input)
+    }
+  }
+  None
+}
+
+///|
 ///case02
 fn get_invalid_case02(input : StringView) -> Array[Int64] raise Day02Error {
   let (x, y) = input.split_once("-").unwrap()
-  let start : Int64 = @string.from_str(x) catch { e => raise InvalidStart }
-  let end : Int64 = @string.from_str(y) catch { e => raise InvalidEnd }
+  let start : Int64 = @string.from_str(x) catch { _e => raise InvalidStart }
+  let end : Int64 = @string.from_str(y) catch { _e => raise InvalidEnd }
   let invalids : Array[Int64] = []
   for each in start..<=end {
-    let each_str = "\{each}"
-    let l = Lexer::new(each_str)
-    match l.find_invalid() {
+    match find_invalid("\{each}") {
       Some(s) => {
         let n : Int64 = @string.from_str(s) catch {
-          e => raise InvalidStringToNum
+          _e => raise InvalidStringToNum
         }
         invalids.push(n)
       }
@@ -61,31 +93,13 @@ fn get_invalid_case02(input : StringView) -> Array[Int64] raise Day02Error {
 }
 
 ///|
-fn n_repeat(s : String, n : Int32) -> String {
-  let mut acc = ""
-  for _ in 0..<n {
-    acc += s
-  }
-  acc
-}
-
-///|
-fn n_times(s : Array[Char], n : Int32) -> Array[Char] {
-  let mut acc = []
-  for _ in 0..<n {
-    acc += s
-  }
-  acc
-}
-
-///|
 
 ///|
 pub fn run(case : String) -> Unit raise Day02Error {
   let content = @fs.read_file_to_string(
     "/home/zw/code/moonbit_programming/aoc2025/day02/tmp/input.txt",
   ) catch {
-    e => raise InvalidInputFile
+    _e => raise InvalidInputFile
   }
 
   let start = @env.now()
