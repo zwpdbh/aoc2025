@@ -1,0 +1,6 @@
+import {
+  "zw/day03" @lib,
+  "zw/utils",
+}
+
+pkgtype(kind: "executable")

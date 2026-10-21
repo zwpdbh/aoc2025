@@ -6,7 +6,14 @@ pub const PROJECT_ROOT : String = "/home/zw/code/moonbit_programming/aoc2025"
 
 pub async fn download_file(url~ : String, dest_dir~ : String) -> String
 
+pub fn parse_case() -> String raise CliError
+
 // Errors
+pub(all) suberror CliError {
+  MissingCase
+  InvalidCase(String)
+}
+
 pub(all) suberror DownloadError {
   BadStatus(Int32, String)
   TooManyRedirects(String)

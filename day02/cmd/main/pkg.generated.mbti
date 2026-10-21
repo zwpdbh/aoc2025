@@ -4,7 +4,6 @@ package "zw/day02/cmd/main"
 // Values
 
 // Errors
-type Day02MainError
 
 // Types and methods
 

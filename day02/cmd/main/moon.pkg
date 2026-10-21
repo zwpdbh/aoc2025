@@ -2,7 +2,7 @@ warnings = "-unused_value-unused_type_declaration-unused_package"
 
 import {
   "zw/day02" @lib,
-  "moonbitlang/core/env",
+  "zw/utils",
 }
 
 pkgtype(kind: "executable")
