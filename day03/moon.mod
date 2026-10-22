@@ -27,4 +27,5 @@ description = ""
 
 import {
   "zw/utils@0.1.0",
+  "moonbitlang/x@0.5.5",
 }

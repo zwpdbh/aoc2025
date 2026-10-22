@@ -2,9 +2,13 @@
 package "zw/day03"
 
 // Values
-pub fn run(String) -> Unit
+pub fn run(String) -> Unit raise Day03Error
 
 // Errors
+pub(all) suberror Day03Error {
+  InvalidInputFile(String)
+  InvalidDigitNumberProcess
+}
 
 // Types and methods
 

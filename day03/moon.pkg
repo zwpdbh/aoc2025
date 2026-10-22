@@ -1,1 +1,5 @@
+warnings = "-unused_type_declaration-unused_package-unused_field-unused_error_type-unused_value-unused_constructor"
 
+import {
+  "moonbitlang/x/fs",
+}
